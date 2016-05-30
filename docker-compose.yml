@@ -1,0 +1,11 @@
+version: '2'
+services:
+  test:
+    build: .
+    command: bundle exec rspec
+    container_name: test_app
+    volumes:
+      - .:/app
+  selenium:
+    image: selenium/standalone-firefox
+    container_name: selenium
