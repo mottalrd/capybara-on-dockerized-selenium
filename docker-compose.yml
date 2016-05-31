@@ -4,8 +4,12 @@ services:
     build: .
     command: bundle exec rspec
     container_name: test_app
+    environment:
+      - SELENIUM_REMOTE_HOST=selenium
     volumes:
       - .:/app
+    depends_on:
+      - selenium
   selenium:
     image: selenium/standalone-firefox
     container_name: selenium

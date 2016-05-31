@@ -8,7 +8,6 @@ require 'rspec/rails'
 require 'capybara'
 require 'pry'
 require 'pry-byebug'
-require_relative 'support/capybara_util'
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -29,6 +28,17 @@ require_relative 'support/capybara_util'
 # Checks for pending migration and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.maintain_test_schema!
+
+if ENV['SELENIUM_REMOTE_HOST']
+  Capybara.javascript_driver = :selenium_remote_firefox
+  Capybara.register_driver "selenium_remote_firefox".to_sym do |app|
+    Capybara::Selenium::Driver.new(
+      app,
+      browser: :remote,
+      url: "http://#{ENV['SELENIUM_REMOTE_HOST']}:4444/wd/hub",
+      desired_capabilities: :firefox)
+  end
+end
 
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
@@ -60,7 +70,7 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   config.before(:each) do
-    if CapybaraUtil.selenium_remote?
+    if /selenium_remote/.match Capybara.current_driver.to_s
       ip = `/sbin/ip route|awk '/scope/ { print $9 }'`
       ip = ip.gsub "\n", ""
       Capybara.server_port = "3000"
@@ -75,6 +85,3 @@ RSpec.configure do |config|
     Capybara.app_host = nil
   end
 end
-
-Capybara.javascript_driver = :selenium_remote_firefox
-CapybaraUtil.register_selenium_remote_driver(:firefox)
